@@ -1,0 +1,12 @@
+{
+  "name": "local-password-manager",
+  "version-string": "0.1.0",
+  "dependencies": [
+    "fmt",
+    "openssl",
+    "libsodium",
+    "tbb",
+    "nlohmann-json",
+    "cli11"
+  ]
+}
