@@ -88,7 +88,7 @@ void Command::_unlock() {
 	}
 
 	if (vaultEngine.getIsUnlocked()) {
-		std::cerr << "Vault is not unlocked. Call 'vault unlock' first.\n";
+		std::cerr << "Vault is already unlocked.\n";
 
 		return;
 	}
@@ -328,7 +328,7 @@ void Command::_generate() {
 
 	std::string randomPassword;
 
-	for (time_t i = 0; i < passwordLength; i++) {
+	for (size_t i = 0; i < passwordLength; i++) {
 		randomPassword.push_back(Common::getPasswordCharacters()[randombytes_uniform(Common::getPasswordCharacters().size())]);
 	}
 

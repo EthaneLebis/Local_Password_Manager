@@ -34,22 +34,36 @@ The program starts with vault init to create .vault file on disk. Then can add p
 
 #### vault unlock
 
-Each of starting the program this must run to use `vault add`, `vault get`, `vault list`, `vault delete`, `vault update`. This was added to protect the user. Using the master password was taken in `vault init` part should enter in this section. This is similar to authontication.  
+Each of starting the program this must run to use `vault add`, `vault get`, `vault list`, `vault delete`, `vault update`. This was added to protect the user. Using the master password was taken in `vault init` part should enter in this section. This is similar to authontication. Without knowing the master password User can't obtain credentials, and can't see .vault file data. 
 
 #### vault add
 
-To add new credential this can be used. Adding website, password, note, username, and create_at saved using  
+To add new credential this can be used. Adding website, password, note, username, and create_at saved automaticly. Each time new credential saves in vector on RAM, moreover saves on disk that .vault file.  
 
 #### vault get
 
+Entering the website name, user can get data which was provided in `vault add`. Additianally it directly copy the password to clipboard.
+
 #### vault list
+
+Shows all credentials in a table without password to see possible websites and credentials to enter in `vault get`, `vault delete`, `vault update`.
 
 #### vault delete
 
+Entering the website name, user can remove the credential permenently from disk and RAM.
+
 #### vault update
+
+Using website user update provided credential. User can update first of all password.  
 
 #### vault generate
 
+Using randombytes_uniform() which provided by sodium.h that libsodium documentation to generate the random password. This function was used to provide that each character has same probability.
+
 #### vault help
 
+Shows possible subcommands can use in this project terminal.
+
 #### vault exit
+
+Exit the teminal that close the session. Additianally make the key value zero to provide the memmory safe.
