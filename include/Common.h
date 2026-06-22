@@ -13,11 +13,14 @@
 #include <conio.h>
 #include <sodium.h>
 #include <Windows.h>
+#include <limits>
 
 class Common {
+	inline static constexpr std::string_view PASSWORD_CHARACTERS =
+		"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{};:,<>.?";
 
 	public:
-
+	
 		static std::string_view trim(std::string_view _string) {
 			while (!_string.empty()
 				&& std::isspace(static_cast<unsigned char>(_string.front()))) {
@@ -113,5 +116,35 @@ class Common {
 
 			CloseClipboard();
 			return true;
+		}
+
+		static int getInt(const std::string& prompt) {
+			int number;
+
+			std::cout << prompt;
+			std::cin >> number;
+
+
+			if (std::cin.fail()) {
+				std::cin.clear();
+
+				std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
+
+				number = -1;
+			}
+
+			if (std::cin.peek() != '\n' && std::cin.peek() != EOF) {
+				std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
+
+				number = -1;
+			}
+
+			std::cin.ignore((std::numeric_limits<std::streamsize>::max)(), '\n');
+
+			return number;
+		}
+
+		static std::string_view getPasswordCharacters() {
+			return PASSWORD_CHARACTERS;
 		}
 };

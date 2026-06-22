@@ -4,26 +4,34 @@
 #include "../include/Crypto.h"
 
 void Vault::init(const std::string& _masterPassword) {
-
 	_salt = KDF::randomSalt();
-
 	_key = KDF::derive(_masterPassword, _salt);
 
 	std::string plaintext = nlohmann::json::array().dump();
 
 	auto encryptedData = CryptoEngine::encrypt(plaintext, _key);
 
-	std::ofstream createVaultFile(VaultPath, std::ios::out | std::ios::binary);
+	std::filesystem::path TempPath = VaultPath;
+	TempPath.replace_extension(".vault.tmp");
 
-	if (!createVaultFile.is_open()) {
-		std::cerr << "Could not create vault file at path.\n";
+	{
+		std::ofstream createVaultFile(TempPath, std::ios::out | std::ios::binary);
 
-		throw std::runtime_error("Could not open vault file.");
+		if (!createVaultFile.is_open()) {
+			std::cerr << "Could not create vault file at path.\n";
+
+			return;
+		}
+
+		createVaultFile.write(reinterpret_cast<const char*>(_salt.data()), _salt.size());
+		createVaultFile.write(reinterpret_cast<const char*>(encryptedData.data()), encryptedData.size());
+		createVaultFile.close();
 	}
 
-	createVaultFile.write(reinterpret_cast<const char*>(_salt.data()), _salt.size());
-	createVaultFile.write(reinterpret_cast<const char*>(encryptedData.data()), encryptedData.size());
-	createVaultFile.close();
+	if (std::filesystem::exists(VaultPath))
+		std::filesystem::remove(VaultPath);
+
+	std::filesystem::rename(TempPath, VaultPath);
 
 	std::cout << "Vault initialized successfully with a secure profile format. Use 'vault unlock' first.\n";
 }
@@ -31,25 +39,34 @@ void Vault::init(const std::string& _masterPassword) {
 void Vault::save(std::vector<Credential>& _credentials) {
 	nlohmann::json json = nlohmann::json::array();
 
-	for (const auto& credential : _credentials) {
+	for (const auto& credential : _credentials) 
 		json.push_back(credential.to_json());
-	}
 
 	std::string plaintext = json.dump();
 
 	auto encryptedData = CryptoEngine::encrypt(plaintext, _key);
 
-	std::ofstream createVaultFile(VaultPath, std::ios::out | std::ios::binary);
+	std::filesystem::path TempPath = VaultPath;
+	TempPath.replace_extension(".vault.tmp");
 
-	if (!createVaultFile.is_open()) {
-		std::cerr << "Could not create vault file at path.\n";
+	{
+		std::ofstream createVaultFile(TempPath, std::ios::out | std::ios::binary);
 
-		return;
+		if (!createVaultFile.is_open()) {
+			std::cerr << "Could not create vault file at path.\n";
+
+			return;
+		}
+
+		createVaultFile.write(reinterpret_cast<const char*>(_salt.data()), _salt.size());
+		createVaultFile.write(reinterpret_cast<const char*>(encryptedData.data()), encryptedData.size());
+		createVaultFile.close();
 	}
 
-	createVaultFile.write(reinterpret_cast<const char*>(_salt.data()), _salt.size());
-	createVaultFile.write(reinterpret_cast<const char*>(encryptedData.data()), encryptedData.size());
-	createVaultFile.close();
+	if (std::filesystem::exists(VaultPath))
+		std::filesystem::remove(VaultPath);
+
+	std::filesystem::rename(TempPath, VaultPath);
 
 	std::cout << "Saved successfully.\n";
 }
@@ -57,11 +74,8 @@ void Vault::save(std::vector<Credential>& _credentials) {
 nlohmann::json Vault::unlock(const std::string& _masterPassword) {
 	std::ifstream readVaultFile(VaultPath, std::ios::in | std::ios::binary);
 
-	if (!readVaultFile.is_open()) {
-		std::cerr << "Could not open vault file.\n";
-
-		return 0;
-	}
+	if (!readVaultFile.is_open()) 
+		throw std::runtime_error("Could not open vault file.");
 
 	readVaultFile.read(reinterpret_cast<char*>(_salt.data()), _salt.size());
 

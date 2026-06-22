@@ -14,6 +14,8 @@ void Command::run() {
 
 		std::getline(std::cin, command);
 
+		command = Common::trim(command);
+
 		if (command == "vault init") {
 			Command::_init();
 		}
@@ -34,6 +36,9 @@ void Command::run() {
 		}
 		else if (command == "vault update") {
 			Command::_update();
+		}
+		else if (command == "vault generate") {
+			Command::_generate();
 		}
 		else if (command == "vault help") {
 			Command::_help();
@@ -74,6 +79,14 @@ void Command::_init() {
 }
 
 void Command::_unlock() {
+	std::filesystem::path VaultPath(Common::defaultVaultPath());
+
+	if (!std::filesystem::exists(VaultPath)) {
+		std::cerr << "No vault found. Run 'vault init' first.\n";
+
+		return;
+	}
+
 	if (vaultEngine.getIsUnlocked()) {
 		std::cerr << "Vault is not unlocked. Call 'vault unlock' first.\n";
 
@@ -168,9 +181,8 @@ void Command::_get() {
 		std::cout << "Username: " << credential->username << "\n";
 		std::cout << "Note: " << credential->note << "\n";
 		
-		if (Common::copyToClipboard(credential->password)) {
+		if (Common::copyToClipboard(credential->password))
 			std::cout << "Password was copied clipboard.\n";
-		}
 	}
 	else {
 		std::cerr << "No any credential found.\n";
@@ -305,6 +317,26 @@ void Command::_update() {
 	}
 }
 
+void Command::_generate() {
+	int passwordLength = Common::getInt("Enter length of the password: ");
+
+	if (passwordLength == -1) {
+		std::cout << "Invalid numerical input.\n";
+
+		return;
+	}
+
+	std::string randomPassword;
+
+	for (time_t i = 0; i < passwordLength; i++) {
+		randomPassword.push_back(Common::getPasswordCharacters()[randombytes_uniform(Common::getPasswordCharacters().size())]);
+	}
+
+	std::cout << randomPassword << '\n';
+	if (Common::copyToClipboard(randomPassword)) 
+		std::cout << "Password was copied clipboard.\n";
+}
+
 void Command::_help() {
 	std::cout << std::left << " |\n";
 	std::cout << std::setw(28) << " | - vault init" << "Create a new vault at `~/.vault/default.vault`\n |" << std::endl;
@@ -314,7 +346,8 @@ void Command::_help() {
 	std::cout << std::setw(28) << " | - vault list" << "List all stored site names\n |" << std::endl;
 	std::cout << std::setw(28) << " | - vault delete" << "Remove a credential\n |" << std::endl;
 	std::cout << std::setw(28) << " | - vault update" << "Update a credential\n |" << std::endl;
-	std::cout << std::setw(28) << " | - vault exit" << "Close the project\n |\n" << std::endl;
+	std::cout << std::setw(28) << " | - vault exit" << "Close the project\n |" << std::endl;
+	std::cout << std::setw(28) << " | - vault generate" << "Generate random password\n |\n" << std::endl;
 }
 
 void Command::_exit(bool& _isRunning) {

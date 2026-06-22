@@ -25,6 +25,8 @@ class Command {
 
 		void _update();
 
+		void _generate();
+
 		void _help();
 
 		void _exit(bool& isRunning);
